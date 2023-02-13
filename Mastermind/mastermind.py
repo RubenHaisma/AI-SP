@@ -1,3 +1,5 @@
+### This code was partially produced by the help of Github Co-pilot and ChatGPT. Other than that, I did not use any other sources.
+
 import random
 
 def evaluate_guess(guess, code):
