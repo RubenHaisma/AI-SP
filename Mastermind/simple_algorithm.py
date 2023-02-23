@@ -35,8 +35,7 @@ def evaluate(guess, secret, codeLength):
                secretCopy.replace(guess[i], '', 1)
    return score
 
-### This function was rewritten from the function reduce, that was proivided in the powerpoint presentation ###
-
+# This function was rewritten from the function reduce, that was proivided in the powerpoint presentation
 def removeImpossibleCodes(possibleCodes, guess, score):  # remove all codes that are not possible
     for code in possibleCodes:
         if evaluate(code, guess, len(code)) != score:

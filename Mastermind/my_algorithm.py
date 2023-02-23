@@ -1,4 +1,5 @@
-### 
+### My algorithm uses the same functions as the simple algorithm, but it uses a different next_guess function,
+### it takes into account what the favorite colour of the guesses is and uses that to make a first guess.
 
 import random
 import itertools
@@ -32,10 +33,10 @@ def removeImpossibleCodes(possibleCodes, guess, score):
     # remove all codes that are not possible
     return [code for code in possibleCodes if evaluate(code, guess, len(code)) == score]
 
-
-def next_guess(possibleCodes, pastGuesses):
+def next_guess(possibleCodes, pastGuesses, favoriteColor):
     if len(pastGuesses) == 0:
-        return random.choice(possibleCodes)
+        # Use favorite color to form the first guess
+        return favoriteColor * len(possibleCodes[0])
     codeLength = len(pastGuesses[0])
     if len(possibleCodes) == 1:
         return possibleCodes[0]
@@ -52,13 +53,14 @@ def play_game_2():  # Function to actually start playing the game
     code_length = 4
     max_guesses = 10
     possibleCodes = createPossibleCodes(colors, code_length)
+    favorite_color = input("Wat is je favoriete kleur? ")
     secret_code = input("Bedenk de geheime code: ")
     print("Laat de computer raden!")
     print(f"De geheime code is: {secret_code}")
     guesses = []
     for i in range(max_guesses):
         print(f"Gok #{i+1}:")
-        guess = next_guess(possibleCodes, guesses)
+        guess = next_guess(possibleCodes, guesses, favorite_color)
         guesses.append(guess)
         print(guess)
         score = evaluate(guess, secret_code, code_length)
@@ -74,5 +76,4 @@ def play_game_2():  # Function to actually start playing the game
 
 if __name__ == '__main__':
     play_game_2()
-
-
+    

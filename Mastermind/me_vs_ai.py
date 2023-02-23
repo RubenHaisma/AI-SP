@@ -1,3 +1,6 @@
+### Basically the same functions were used, but the code was rewritten (by me) 
+### to reverse the code and let me play against the computer. 
+
 import random
 import itertools
 

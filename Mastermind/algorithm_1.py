@@ -1,3 +1,5 @@
+### This file contains the Most-Parts algorithm which was written by ChatGPT. The other code was copied from the previous file and altered by me to fit. ###
+
 import random
 import itertools
 
