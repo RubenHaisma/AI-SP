@@ -19,12 +19,16 @@ def menu():
     choice = input('Enter your choice: ')
     if choice == '1':
         playGame(nextGuessMostParts)
+        menu()
     elif choice == '2':
         playGame(nextGuessSimple)
+        menu()
     elif choice == '3':
         playFav(nextGuessFav)
+        menu()
     elif choice == '4':
         playAI()
+        menu()
     elif choice == '5':
         print('Goodbye!')
         exit()
