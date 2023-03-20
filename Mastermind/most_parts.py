@@ -6,9 +6,8 @@ import itertools
 #import the functions from the functions.py file
 from functions import *
 
+# Most-Parts algorithm
 def nextGuess(possibleCodes):
-    # Choose the next guess from the list of possible combinations
-    # Most-Parts algorithm
     bestGuess = None
     maxEliminated = -1
     for guess in possibleCodes:

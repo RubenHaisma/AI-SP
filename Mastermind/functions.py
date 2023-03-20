@@ -5,13 +5,14 @@ COLORS = ['R', 'G', 'B', 'Y', 'O', 'P']
 CODELENGTH = 4
 MAXGUESSES = 10
 
+# Creates a list of all possible codes
 def createPossibleCodes(colors, numberOfPositions: int):
-    # Creeert een lijst van alle mogelijke oplossingen op basis van een lijst met colors en het aantal posities
     possibleCodes = []
     for code in itertools.product(colors, repeat=numberOfPositions):
         possibleCodes.append(''.join(code))
     return possibleCodes   
 
+# Function to evaluate the guess
 def evaluateGuess(guess, secret, codeLength):
    score = [0,0]
    used = []
@@ -31,6 +32,7 @@ def evaluateGuess(guess, secret, codeLength):
                secretCopy = secretCopy[:secretCopy.index(guess[i])] + ' ' + secretCopy[secretCopy.index(guess[i])+1:]
    return score
 
+# Function to remove impossible codes
 # This function was rewritten from the function reduce, that was proivided in the powerpoint presentation
 def removeImpossibleCodes(possibleCodes, guess, score):
     newPossibleCodes = []
@@ -39,8 +41,9 @@ def removeImpossibleCodes(possibleCodes, guess, score):
             newPossibleCodes.append(code)
     return newPossibleCodes
 
-
-def playGame(nextGuess):  # Function to actually start playing the game
+# Function to actually start playing the game
+# This function was written by me with help of stackoverflow. (Nothing was ctrl+c ctrl+v'ed)
+def playGame(nextGuess):  
     possibleCodes = createPossibleCodes(COLORS, CODELENGTH)
     secret_code = input("Bedenk de geheime code: ")
     print("Laat de computer raden!")
@@ -55,66 +58,41 @@ def playGame(nextGuess):  # Function to actually start playing the game
         print(score)
         possibleCodes = removeImpossibleCodes(possibleCodes, guess, score)
         if score[0] == CODELENGTH:
-            print("De computer heeft gewonnen!")
+            print("De computer heeft gewonnen!", '\n')
             break
         if possibleCodes == []:
-            print("De computer heeft verloren!")
+            print("De computer heeft verloren!", '\n')
             break
     else:
         print("De computer heeft verloren!")
         print(f"De geheime code was: {secret_code}")
     return guesses
 
+# Function to actually start playing the game for the favorite color algorithm
+# This function was rewritten from the function playGame, to fit the special needs of the favorite color algorithm
 def playFav(nextGuess):
-    colors = ['R', 'G', 'B', 'Y', 'O', 'P']
-    code_length = 4
-    max_guesses = 10
-    possibleCodes = createPossibleCodes(colors, code_length)
+    possibleCodes = createPossibleCodes(COLORS, CODELENGTH)
     favorite_color = input("Wat is je favoriete kleur? ")
-    if favorite_color not in colors:
+    if favorite_color not in COLORS:
         print("Dat is geen geldige kleur!")
         playFav()
     secret_code = input("Bedenk de geheime code: ")
     print("Laat de computer raden!")
     print(f"De geheime code is: {secret_code}")
     guesses = []
-    for i in range(max_guesses):
+    for i in range(MAXGUESSES):
         print(f"Gok #{i+1}:")
         guess = nextGuess(possibleCodes, guesses, favorite_color)
         guesses.append(guess)
         print(guess)
-        score = evaluateGuess(guess, secret_code, code_length)
+        score = evaluateGuess(guess, secret_code, CODELENGTH)
         print(score)
         possibleCodes = removeImpossibleCodes(possibleCodes, guess, score)
         print(f"Aantal mogelijke combinaties: {len(possibleCodes)}")
-        if score[0] == code_length:
-            print("De computer heeft gewonnen!")
+        if score[0] == CODELENGTH:
+            print("De computer heeft gewonnen!", '\n')
             break
     else:
         print("De computer heeft verloren!")
-        print(f"De geheime code was: {secret_code}")
+        print(f"De geheime code was: {secret_code}", '\n')
 
-def playAI():
-    colors = ['R', 'G', 'B', 'Y', 'O', 'P']
-    code_length = 4
-    max_guesses = 10
-    possibleCodes = createPossibleCodes(colors, code_length)
-    secret_code = random.choice(possibleCodes)
-    print("De computer heeft een code gegenereerd!")
-    guesses = []
-    for i in range(max_guesses):
-        print(f"Gok #{i+1}:")
-        guess = input("Voer een code in: ")
-        guesses.append(guess)
-        score = evaluateGuess(guess, secret_code, code_length)
-        print(score)
-        if score[0] == code_length:
-            print("Je hebt de code geraden!")
-            break
-    else:
-        print("Je hebt verloren!")
-        print(f"De geheime code was: {secret_code}")
-
-
-if __name__ == "__main__":
-    playGame()
