@@ -10,4 +10,6 @@ def nextGuess(possibleCodes):
     nextGuess = random.choice(possibleCodes)
     return nextGuess
 
-playGame(nextGuess)
+if __name__ == "__main__":
+    playGame(nextGuess)
+    

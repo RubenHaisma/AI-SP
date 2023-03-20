@@ -22,4 +22,5 @@ def nextGuess(possibleCodes):
             maxEliminated = numEliminated
     return bestGuess    
 
-playGame(nextGuess)
+if __name__ == "__main__":
+    playGame(nextGuess)

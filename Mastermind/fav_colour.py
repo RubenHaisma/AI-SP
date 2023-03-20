@@ -29,5 +29,5 @@ def nextGuess(possibleCodes, pastGuesses, favoriteColor):
                 return code
     return bestCode
 
-playFav(nextGuess)
-    
+if __name__ == "__main__":
+    playFav(nextGuess)
