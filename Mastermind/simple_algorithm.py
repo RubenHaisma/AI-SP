@@ -1,6 +1,7 @@
 import random
-import itertools
-from functions import playGame
+
+# import the functions from the functions.py file
+from functions import *
 
 
 def nextGuess(possibleCodes):
