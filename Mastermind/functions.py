@@ -82,7 +82,10 @@ def playFav(nextGuess):
     possibleCodes = createPossibleCodes(COLORS, CODELENGTH)
     favorite_color = input("What is your favorite colour? ")
     if favorite_color not in COLORS:
-        print("That's not a colour!")
+        print("That's not a valid code!")
+        playFav()
+    if len(favorite_color) != CODELENGTH:
+        print("That's not a valid code!")
         playFav()
     secret_code = input("Think of a secret code (RGBY): ")
     print("Let the computer do it's magic!")
