@@ -48,6 +48,12 @@ def removeImpossibleCodes(possibleCodes, guess, score):
 def playGame(nextGuess):  
     possibleCodes = createPossibleCodes(COLORS, CODELENGTH)
     secret_code = input("Think of a secret code: ")
+    if len(secret_code) != CODELENGTH:
+        print("That's not a valid code!")
+        playGame(nextGuess)
+    if not all(char in COLORS for char in secret_code):
+        print("That's not a valid code!")
+        playGame(nextGuess)
     print("Let the computer do it's magic!")
     print(f"The secret code is: {secret_code}")
     guesses = []
