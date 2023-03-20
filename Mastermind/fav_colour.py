@@ -5,10 +5,10 @@ import itertools
 # import the functions from the functions.py file
 from functions import *
 
+
 # In this function the computer will try to guess the code based on the favorite color of the player.
 # if the favorite color is in the secret code, the computer will try to guess that color first.
 # if the favorite color is not in the secret code, the computer will try to guess a code that contains the favorite color.
-
 def nextGuess(possibleCodes, pastGuesses, favoriteColor):
     if len(pastGuesses) == 0:
         return favoriteColor * len(possibleCodes[0])

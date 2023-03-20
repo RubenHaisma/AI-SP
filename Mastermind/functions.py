@@ -1,4 +1,3 @@
-import random
 import itertools
 
 COLORS = ['R', 'G', 'B', 'Y', 'O', 'P']
@@ -6,6 +5,7 @@ CODELENGTH = 4
 MAXGUESSES = 10
 
 # Creates a list of all possible codes
+# Function was rewritten from the function createAllCodes, that was proivided in the powerpoint presentation
 def createPossibleCodes(colors, numberOfPositions: int):
     possibleCodes = []
     for code in itertools.product(colors, repeat=numberOfPositions):
@@ -13,6 +13,7 @@ def createPossibleCodes(colors, numberOfPositions: int):
     return possibleCodes   
 
 # Function to evaluate the guess
+# Function was written by ChatGPT and was alterted to fit my needs
 def evaluateGuess(guess, secret, codeLength):
    score = [0,0]
    used = []
@@ -34,6 +35,7 @@ def evaluateGuess(guess, secret, codeLength):
 
 # Function to remove impossible codes
 # This function was rewritten from the function reduce, that was proivided in the powerpoint presentation
+# Source: https://github.com/LinaBlijlevenHU/StructuredProgramming2023
 def removeImpossibleCodes(possibleCodes, guess, score):
     newPossibleCodes = []
     for code in possibleCodes:
@@ -42,12 +44,12 @@ def removeImpossibleCodes(possibleCodes, guess, score):
     return newPossibleCodes
 
 # Function to actually start playing the game
-# This function was written by me with help of stackoverflow. (Nothing was ctrl+c ctrl+v'ed)
+# This function was written by me with help of ChatGPT and my own knowing.
 def playGame(nextGuess):  
     possibleCodes = createPossibleCodes(COLORS, CODELENGTH)
-    secret_code = input("Bedenk de geheime code: ")
-    print("Laat de computer raden!")
-    print(f"De geheime code is: {secret_code}")
+    secret_code = input("Think of a secret code: ")
+    print("Let the computer do it's magic!")
+    print(f"The secret code is: {secret_code}")
     guesses = []
     for i in range(MAXGUESSES):
         print(f"Gok #{i+1}:")
@@ -58,41 +60,40 @@ def playGame(nextGuess):
         print(score)
         possibleCodes = removeImpossibleCodes(possibleCodes, guess, score)
         if score[0] == CODELENGTH:
-            print("De computer heeft gewonnen!", '\n')
+            print("The computer has won!", '\n')
             break
         if possibleCodes == []:
-            print("De computer heeft verloren!", '\n')
+            print("The computer has lost!", '\n')
             break
     else:
-        print("De computer heeft verloren!")
-        print(f"De geheime code was: {secret_code}")
+        print("The computer has lost!")
+        print(f"The secret code was: {secret_code}")
     return guesses
 
 # Function to actually start playing the game for the favorite color algorithm
 # This function was rewritten from the function playGame, to fit the special needs of the favorite color algorithm
 def playFav(nextGuess):
     possibleCodes = createPossibleCodes(COLORS, CODELENGTH)
-    favorite_color = input("Wat is je favoriete kleur? ")
+    favorite_color = input("What is your favorite colour? ")
     if favorite_color not in COLORS:
-        print("Dat is geen geldige kleur!")
+        print("That's not a colour!")
         playFav()
-    secret_code = input("Bedenk de geheime code: ")
-    print("Laat de computer raden!")
-    print(f"De geheime code is: {secret_code}")
+    secret_code = input("Think of a secret code (RGBY): ")
+    print("Let the computer do it's magic!")
+    print(f"The secret code is: {secret_code}")
     guesses = []
     for i in range(MAXGUESSES):
-        print(f"Gok #{i+1}:")
+        print(f"Guess #{i+1}:")
         guess = nextGuess(possibleCodes, guesses, favorite_color)
         guesses.append(guess)
         print(guess)
         score = evaluateGuess(guess, secret_code, CODELENGTH)
         print(score)
         possibleCodes = removeImpossibleCodes(possibleCodes, guess, score)
-        print(f"Aantal mogelijke combinaties: {len(possibleCodes)}")
+        print(f"Possible combinations: {len(possibleCodes)}")
         if score[0] == CODELENGTH:
-            print("De computer heeft gewonnen!", '\n')
+            print("The computer has won!", '\n')
             break
     else:
-        print("De computer heeft verloren!")
-        print(f"De geheime code was: {secret_code}", '\n')
-
+        print("The computer has lost!")
+        print(f"The secret code was: {secret_code}", '\n')

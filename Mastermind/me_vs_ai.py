@@ -24,6 +24,5 @@ def playAI():
         print("Je hebt verloren!")
         print(f"De geheime code was: {secret_code}", '\n')
 
-# Function to allow the computer to generate a code and the player to guess it
 if __name__ == "__main__":
     playAI()

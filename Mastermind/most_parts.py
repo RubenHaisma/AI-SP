@@ -19,7 +19,7 @@ def nextGuess(possibleCodes):
         if numEliminated > maxEliminated:
             bestGuess = guess
             maxEliminated = numEliminated
-    return bestGuess    
+    return bestGuess  
 
 if __name__ == "__main__":
     playGame(nextGuess)

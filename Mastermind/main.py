@@ -6,7 +6,7 @@
 from fav_colour import nextGuess as nextGuessFav
 from simple_algorithm import nextGuess as nextGuessSimple
 from most_parts import nextGuess as nextGuessMostParts
-from me_vs_ai import secretCode
+from me_vs_ai import playAI
 from functions import *
 
 def menu():
