@@ -9,16 +9,16 @@ from functions import *
 # Most-Parts algorithm
 def nextGuess(possibleCodes):
     bestGuess = None
-    maxEliminated = -1
+    minMaxRemaining = len(possibleCodes)
     for guess in possibleCodes:
-        eliminatedCounts = {}
+        remainingCounts = {}
         for code in possibleCodes:
             score = evaluateGuess(guess, code, len(guess))
-            eliminatedCounts.setdefault(tuple(score), set()).add(code)
-        numEliminated = sum(len(codes) for codes in eliminatedCounts.values())
-        if numEliminated > maxEliminated:
+            remainingCounts.setdefault(tuple(score), set()).add(code)
+        maxRemaining = max(len(codes) for codes in remainingCounts.values())
+        if maxRemaining < minMaxRemaining:
             bestGuess = guess
-            maxEliminated = numEliminated
+            minMaxRemaining = maxRemaining
     return bestGuess
 
 
