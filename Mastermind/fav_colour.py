@@ -1,7 +1,5 @@
 ### My algorithm uses the same functions as the simple algorithm, but it uses a different next_guess function,
 ### it takes into account what the favorite colour of the guesses is and uses that to make a first guess.
-
-import random
 import itertools
 
 def createPossibleCodes(colors, numberOfPositions: int):
@@ -11,7 +9,7 @@ def createPossibleCodes(colors, numberOfPositions: int):
         possibleCodes.append(''.join(code))
     return possibleCodes
     
-def evaluate(guess, secret, codeLength):
+def evaluateGuess(guess, secret, codeLength):
     score = [0, 0]
     used = []
     # The black pins
@@ -30,8 +28,14 @@ def evaluate(guess, secret, codeLength):
     return score
 
 def removeImpossibleCodes(possibleCodes, guess, score):
-    # remove all codes that are not possible
-    return [code for code in possibleCodes if evaluate(code, guess, len(code)) == score]
+    # Create a new list of possible codes that should be kept
+    newPossibleCodes = []
+    for code in possibleCodes:
+        if evaluateGuess(code, guess, len(code)) == score:
+            newPossibleCodes.append(code)
+    # Replace the original list with the new list
+    possibleCodes[:] = newPossibleCodes
+    return possibleCodes
 
 def next_guess(possibleCodes, pastGuesses, favoriteColor):
     if len(pastGuesses) == 0:
@@ -54,6 +58,9 @@ def play_game_2():  # Function to actually start playing the game
     max_guesses = 10
     possibleCodes = createPossibleCodes(colors, code_length)
     favorite_color = input("Wat is je favoriete kleur? ")
+    if favorite_color not in colors:
+        print("Dat is geen geldige kleur!")
+        play_game_2()
     secret_code = input("Bedenk de geheime code: ")
     print("Laat de computer raden!")
     print(f"De geheime code is: {secret_code}")
@@ -63,7 +70,7 @@ def play_game_2():  # Function to actually start playing the game
         guess = next_guess(possibleCodes, guesses, favorite_color)
         guesses.append(guess)
         print(guess)
-        score = evaluate(guess, secret_code, code_length)
+        score = evaluateGuess(guess, secret_code, code_length)
         print(score)
         possibleCodes = removeImpossibleCodes(possibleCodes, guess, score)
         print(f"Aantal mogelijke combinaties: {len(possibleCodes)}")
