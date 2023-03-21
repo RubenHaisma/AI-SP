@@ -5,3 +5,5 @@ In this repository I'll give my take on Mastermind. The code consists of multipl
 
 To test every algorithm, you simply run the main.py file and select which mode you would like to play. If you are done, simply press 5 when you get prompted to enter the game end the game will close. Enjoy. 
 
+While playing, make shure to only use the colours: Red (R), Green (G), Blue (B), Yellow (Y), Orange (O) or Purple (P). 
+
