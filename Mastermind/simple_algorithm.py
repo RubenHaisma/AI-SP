@@ -1,12 +1,12 @@
+#import random package
 import random
 
 # import the functions from the functions.py file
 from functions import *
 
-
+# Kies de volgende gok uit de lijst van mogelijke combinaties
+# Random guess
 def nextGuess(possibleCodes):
-    # Kies de volgende gok uit de lijst van mogelijke combinaties
-    # Random guess
     nextGuess = random.choice(possibleCodes)
     return nextGuess
 
