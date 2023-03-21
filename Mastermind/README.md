@@ -1,5 +1,5 @@
 
-# Masterming Mastermind
+# Mastering Mastermind
 
 In this repository I'll give my take on Mastermind. The code consists of multiple functions that are savely stored in functions.py. Every algorithm has it's own file with their 'nextGuess' implementation. 
 
