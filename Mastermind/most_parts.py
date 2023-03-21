@@ -7,6 +7,7 @@ import itertools
 from functions import *
 
 # Most-Parts algorithm
+# This algorithm is based on the idea that the guess with the most parts is the best guess.
 def nextGuess(possibleCodes):
     bestGuess = None
     minMaxRemaining = len(possibleCodes)
