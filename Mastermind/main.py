@@ -1,7 +1,4 @@
 ### Main function to bring it al to gether. Created by me. ###
-
-# can you create a beautiful mastermind menu where it is possible to choose between the different modes, using different nextGuess functions from different files?
-
 # import the different algorithms from the different files
 from fav_colour import nextGuess as nextGuessFav
 from simple_algorithm import nextGuess as nextGuessSimple
@@ -9,6 +6,7 @@ from most_parts import nextGuess as nextGuessMostParts
 from me_vs_ai import playAI
 from functions import *
 
+# Menu for the different play options
 def menu():
     print('Welcome to Mastermind!')
     print('Please choose a mode:', '\n')
