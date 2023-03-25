@@ -33,28 +33,18 @@ def content_filtering():
         elif product[1]:
             category = product[1] # category
 
-        # Add the product ID to the list of recommendations for the category
+        # Add the product name to the list of recommendations for the category
         if category and product[0]:
             if category not in recommendDict:
                 recommendDict[category] = []
             recommendDict[category].append(str(product[0]))
 
     # Insert the recommendations into the content_recommendations table
-    if len (recommendDict) == 4:
+    if recommendDict:
         for category, recommendations in recommendDict.items():
-            values = ','.join(recommendations)
-            insertSql = f"""INSERT INTO content_recommendations 
-                    (category,product_recommendation)
-                    VALUES ('{category}', '{{{values}}}')"""
-
-            cursor.execute(insertSql)
-
-
-
-
-
-
-
+            values = ','.join([f"'{r}'" for r in recommendations]).replace(' ', '"')
+            insertSql = "INSERT INTO content_recommendations (category,product_recommendation) VALUES (%s, %s)"
+            cursor.execute(insertSql, (category, recommendations))
 
 
 def run():
