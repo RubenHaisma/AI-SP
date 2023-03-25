@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.extensions
 from dotenv import load_dotenv
 
 
@@ -21,24 +22,40 @@ def content_filtering():
             ORDER BY p.category,p.sub_category,p.sub_sub_category"""
     cursor.execute(sql)
     similarProducts = cursor.fetchall()
-    recommendList = []
+    recommendDict = {}
     for product in similarProducts:
-        print(product)
-        if len(product) > 4 and product[4]: #category
-            category = product[4]
-            if len(product) > 3 and product[3]: #sub_category
-                category = product[3]
-                if len(product) > 2 and product[2]: #sub_sub_category
-                    category = product[2]
-                    recommendList.append(product[0])
+        # Determine the most specific category name that is present
+        category = None
+        if product[3]:
+            category = product[3] # sub_sub_category
+        elif product[2]:
+            category = product[2] # sub_category
+        elif product[1]:
+            category = product[1] # category
 
+        # Add the product ID to the list of recommendations for the category
+        if category and product[0]:
+            if category not in recommendDict:
+                recommendDict[category] = []
+            recommendDict[category].append(str(product[0]))
 
-        if len(recommendList) == 4:
+    # Insert the recommendations into the content_recommendations table
+    if len (recommendDict) == 4:
+        for category, recommendations in recommendDict.items():
+            values = ','.join(recommendations)
             insertSql = f"""INSERT INTO content_recommendations 
-                (category,product_recommendation)
-                VALUES ('{category}')"""
-            recommendList = []
+                    (category,product_recommendation)
+                    VALUES ('{category}', '{{{values}}}')"""
+
             cursor.execute(insertSql)
+
+
+
+
+
+
+
+
 
 def run():
     content_filtering()
