@@ -9,12 +9,14 @@ CREATE TABLE content_recommendations (
 
 DROP TABLE IF EXISTS collab_recommendations CASCADE;
 
-CREATE TABLE previously_recommended (
-    profileid varchar(255),
-    productid varchar(255),
-    category text NOT NULL,
-    recommendation_timestamp timestamp without time zone DEFAULT now()
-    product_recommendation VARCHAR(255)[]
+CREATE TABLE recommendations (
+    id SERIAL NOT NULL,
+    profileid varchar(255) NOT NULL,
+    productid1 varchar(255) NOT NULL,
+    productid2 varchar(255) NOT NULL,
+    productid3 varchar(255) NOT NULL,
+    productid4 varchar(255) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
