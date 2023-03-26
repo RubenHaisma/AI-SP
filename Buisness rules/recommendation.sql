@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS collab_recommendations CASCADE;
 CREATE TABLE collab_recommendations (
     profile_id varchar(255),
     product_id varchar(255),
+    category text,
     recommendations_timestamp timestamp NOT NULL,
     product_recommendation text,
     PRIMARY KEY (product_id)

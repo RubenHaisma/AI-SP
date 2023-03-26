@@ -7,7 +7,6 @@ load_dotenv()
 
 # user-specific information
 profile_id = input("Enter profile id: ") #5a393d68ed295900010384ca
-cart_products = input("Product ID's: ").split(',') #16121
 
 # connect to database
 connection = psycopg2.connect(user="postgres",
@@ -15,45 +14,49 @@ connection = psycopg2.connect(user="postgres",
                             host="localhost",
                             port="5432",
                             database="huwebshop")
-cursor = connection.cursor() 
+cursor = connection.cursor()
 
 # This script will create a table with content recommendations for each category
-def content_filtering():
-    sql = """SELECT p.id,p.category,p.sub_category,p.sub_sub_category
-            FROM product AS p
-            GROUP BY p.id,p.category,p.sub_category,p.sub_sub_category
-            ORDER BY p.category,p.sub_category,p.sub_sub_category"""
-    cursor.execute(sql)
-    similarProducts = cursor.fetchall()
-    recommendDict = {}
-    for product in similarProducts:
-        # Determine the most specific category name that is present
-        category = None
-        if product[3]:
-            category = product[3] # sub_sub_category
-        elif product[2]:
-            category = product[2] # sub_category
-        elif product[1]:
-            category = product[1] # category
+def collaborative_filtering():
+    viewed_sql = f"SELECT productid FROM viewed_before WHERE profileid='{profile_id}'"
+    cursor.execute(viewed_sql)
+    viewed_products = [str(p[0]) for p in cursor.fetchall()]
 
-        # Add the product name to the list of recommendations for the category
-        if category and product[0]:
-            if category not in recommendDict:
-                recommendDict[category] = []
-            recommendDict[category].append(str(product[0]))
+    purchased_sql = f"SELECT productid FROM \"order\" WHERE sessionid IN (SELECT id FROM \"session\" WHERE profileid='{profile_id}')"
+    cursor.execute(purchased_sql)
+    purchased_products = [str(p[0]) for p in cursor.fetchall()]
+
+    recommendations = list(set(viewed_products + purchased_products))
+
+    # Insert the recommendations into the previously_recommended table
+    if recommendations:
+        for r in recommendations:
+            insert_sql = "INSERT INTO previously_recommended (profileid, productid) VALUES (%s, %s) ON CONFLICT DO NOTHING"
+            cursor.execute(insert_sql, (profile_id, r))
+
+    # Get the recommendations from previously_recommended table
+    select_sql = f"SELECT productid FROM previously_recommended WHERE profileid='{profile_id}'"
+    cursor.execute(select_sql)
+    recommendations = [str(p[0]) for p in cursor.fetchall()]
+
+    # Insert the recommendations into the previously_recommended table
+    if recommendations:
+        for r in recommendations:
+            insert_sql = "INSERT INTO previously_recommended (profileid, productid) VALUES (%s, %s) ON CONFLICT DO NOTHING"
+            cursor.execute(insert_sql, (profile_id, r))
 
     # Insert the recommendations into the content_recommendations table
-    if recommendDict:
-        for category, recommendations in recommendDict.items():
-            values = ','.join([f"'{r}'" for r in recommendations]).replace(' ', '"')
-            insertSql = "INSERT INTO content_recommendations (profile_id, product_id, category, product_recommendation) VALUES (%s, %s, %s, %s)"
-            # recommend products based on user's cart
-            if set(cart_products).intersection(set(recommendations)):
-                cursor.execute(insertSql, (profile_id, product[0], category, recommendations))
-
+    if recommendations:
+        for r in recommendations:
+            select_sql = f"SELECT category, sub_category, sub_sub_category FROM product WHERE id='{r}'"
+            cursor.execute(select_sql)
+            category = cursor.fetchone()
+            if category:
+                insert_sql = "INSERT INTO collab_recommendations (profile_id, product_id, category, product_recommendation) VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING"
+                cursor.execute(insert_sql, (profile_id, r, category[0], str(recommendations)))
 
 def run():
-    content_filtering()
+    collaborative_filtering()
     connection.commit()
     cursor.close()
     connection.close()

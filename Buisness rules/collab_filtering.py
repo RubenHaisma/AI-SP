@@ -1,48 +1,62 @@
 import psycopg2
-from collections import Counter
+import psycopg2.extensions
+from dotenv import load_dotenv
 
-# Connect to the PostgreSQL database
-conn = psycopg2.connect(
-    host="localhost",
-    database="huwebshop",
-    user="postgres",
-    password="1234"
-)
+# load .env file
+load_dotenv()
 
-# Prompt the user to enter a profile ID
-profile_id = input("Enter a profile ID: ")
+# user-specific information
+profile_id = input("Enter profile id: ") #5a393d68ed295900010384ca
 
-# Extract necessary data from the database
-cursor = conn.cursor()
-cursor.execute("""
-    SELECT productid
-    FROM viewed_before
-    WHERE profileid = %s
-""", (profile_id,))
-data = cursor.fetchall()
-cursor.close()
+# connect to database
+connection = psycopg2.connect(user="postgres",
+                            password="postgres_password",
+                            host="localhost",
+                            port="5432",
+                            database="huwebshop")
+cursor = connection.cursor()
 
-# Compute product frequency scores
-product_scores = Counter()
-for row in data:
-    product_id = row[0]
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT profileid
-        FROM viewed_before
-        WHERE productid = %s
-    """, (product_id,))
-    profiles = cursor.fetchall()
+# This script will create a table with collaborative recommendations for each user
+def collaborative_filtering():
+    # Select all orders by the user
+    order_sql = "SELECT productid FROM \"order\" WHERE sessionid IN (SELECT id FROM \"session\" WHERE profileid = %s)"
+    cursor.execute(order_sql, (profile_id,))
+    order_products = [p[0] for p in cursor.fetchall()]
+
+    # Select all products viewed by the user
+    viewed_sql = "SELECT productid FROM viewed_before WHERE profileid = %s"
+    cursor.execute(viewed_sql, (profile_id,))
+    viewed_products = [p[0] for p in cursor.fetchall()]
+
+    # Select all products previously recommended to the user
+    rec_sql = "SELECT productid FROM previously_recommended WHERE profileid = %s"
+    cursor.execute(rec_sql, (profile_id,))
+    rec_products = [p[0] for p in cursor.fetchall()]
+
+    # Get recommendations for user
+    recommend_sql = """SELECT r1.profileid, r1.productid, COUNT(*) AS frequency
+                        FROM "order" r1
+                        JOIN "order" r2 ON r1.sessionid = r2.sessionid AND r1.productid != r2.productid
+                        WHERE r2.productid IN ({0}) AND r1.productid NOT IN ({0}, {1}, {2})
+                        GROUP BY r1.profileid, r1.productid
+                        ORDER BY frequency DESC"""
+    cursor.execute(recommend_sql.format(','.join(str(p) for p in order_products),
+                                        ','.join(str(p) for p in viewed_products),
+                                        ','.join(str(p) for p in rec_products)))
+    recommendations = cursor.fetchall()
+
+    # Insert the recommendations into the collab_recommendations table
+    if recommendations:
+        for rec in recommendations:
+            insert_sql = "INSERT INTO collab_recommendations (profileid, productid, frequency) VALUES (%s, %s, %s)"
+            cursor.execute(insert_sql, (rec[0], rec[1], rec[2]))
+
+
+def run():
+    collaborative_filtering()
+    connection.commit()
     cursor.close()
-    for profile in profiles:
-        if profile[0] != profile_id:
-            product_scores[product_id] += 1
+    connection.close()
 
-# Close the database connection
-conn.close()
-
-# Print top recommended products
-recommendations = [product_id for product_id, _ in product_scores.most_common(4)]
-print("Top recommended products:")
-for product_id in recommendations:
-    print(product_id)
+if __name__ == "__main__":
+    run()
