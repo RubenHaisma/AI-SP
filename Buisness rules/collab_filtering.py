@@ -1,62 +1,82 @@
 import psycopg2
-import psycopg2.extensions
 from dotenv import load_dotenv
 
 # load .env file
 load_dotenv()
 
-# user-specific information
-profile_id = input("Enter profile id: ") #5a393d68ed295900010384ca
-
-# connect to database
+# Connect to the database
 connection = psycopg2.connect(user="postgres",
                             password="postgres_password",
                             host="localhost",
                             port="5432",
                             database="huwebshop")
 cursor = connection.cursor()
+print ("Database opened successfully")
 
-# This script will create a table with collaborative recommendations for each user
-def collaborative_filtering():
-    # Select all orders by the user
-    order_sql = "SELECT productid FROM \"order\" WHERE sessionid IN (SELECT id FROM \"session\" WHERE profileid = %s)"
-    cursor.execute(order_sql, (profile_id,))
-    order_products = [p[0] for p in cursor.fetchall()]
+# Create a cursor
+cur = connection.cursor()
 
-    # Select all products viewed by the user
-    viewed_sql = "SELECT productid FROM viewed_before WHERE profileid = %s"
-    cursor.execute(viewed_sql, (profile_id,))
-    viewed_products = [p[0] for p in cursor.fetchall()]
+# Get the list of all users
+cur.execute("SELECT id FROM profile")
+users = cur.fetchall()
+print(f"Found {len(users)} users")
 
-    # Select all products previously recommended to the user
-    rec_sql = "SELECT productid FROM previously_recommended WHERE profileid = %s"
-    cursor.execute(rec_sql, (profile_id,))
-    rec_products = [p[0] for p in cursor.fetchall()]
+# Create a dictionary to store the products purchased by each user
+user_products = {}
+for user in users:
+    user_products[user[0]] = set()
+    cur.execute(
+        "SELECT productid FROM \"order\" JOIN \"session\" ON \"order\".sessionid = \"session\".id WHERE profileid=%s",
+        (user[0],)
+    )
+    results = cur.fetchall()
+    for result in results:
+        user_products[user[0]].add(result[0])
+print ("Found products for all users")
 
-    # Get recommendations for user
-    recommend_sql = """SELECT r1.profileid, r1.productid, COUNT(*) AS frequency
-                        FROM "order" r1
-                        JOIN "order" r2 ON r1.sessionid = r2.sessionid AND r1.productid != r2.productid
-                        WHERE r2.productid IN ({0}) AND r1.productid NOT IN ({0}, {1}, {2})
-                        GROUP BY r1.profileid, r1.productid
-                        ORDER BY frequency DESC"""
-    cursor.execute(recommend_sql.format(','.join(str(p) for p in order_products),
-                                        ','.join(str(p) for p in viewed_products),
-                                        ','.join(str(p) for p in rec_products)))
-    recommendations = cursor.fetchall()
+# Compute the similarity between users based on the Jaccard similarity of their product sets
+def jaccard_similarity(set1, set2):
+    intersection = set1.intersection(set2)
+    union = set1.union(set2)
+    return len(intersection) / len(union)
 
-    # Insert the recommendations into the collab_recommendations table
-    if recommendations:
-        for rec in recommendations:
-            insert_sql = "INSERT INTO collab_recommendations (profileid, productid, frequency) VALUES (%s, %s, %s)"
-            cursor.execute(insert_sql, (rec[0], rec[1], rec[2]))
+# Get the most similar users to a given user
+def get_similar_users(profile_id):
+    similarities = {}
+    for user in users:
+        if user[0] == profile_id:
+            continue
+        similarity = jaccard_similarity(user_products[profile_id], user_products[user[0]])
+        similarities[user[0]] = similarity
+    return sorted(similarities, key=similarities.get, reverse=True)[:10]
 
+# Get the products purchased by the most similar users that the given user has not already purchased
+def get_recommendations(profile_id):
+    similar_users = get_similar_users(profile_id)
+    recommendations = set()
+    for user in similar_users:
+        cur.execute(
+            "SELECT productid FROM \"order\" JOIN \"session\" ON \"order\".sessionid = \"session\".id WHERE profileid=%s AND productid NOT IN %s",
+            (user, tuple(user_products[profile_id]))
+        )
+        results = cur.fetchall()
+        for result in results:
+            recommendations.add(result[0])
+    return list(recommendations)[:4]
 
-def run():
-    collaborative_filtering()
+# Store the recommendations in the database
+def store_recommendations(profile_id, recommendations):
+    cur.execute("INSERT INTO recommendations (profileid, productid1, productid2, productid3, productid4) VALUES (%s, %s, %s, %s, %s)",
+                (profile_id, recommendations[0], recommendations[1], recommendations[2], recommendations[3]))
     connection.commit()
-    cursor.close()
-    connection.close()
 
-if __name__ == "__main__":
-    run()
+# Example usage
+profile_id = input("Enter profile id: ")
+recommendations = get_recommendations(profile_id)
+store_recommendations(profile_id, recommendations)
+
+# Close the connection
+cur.close()
+connection.close()
+
+
