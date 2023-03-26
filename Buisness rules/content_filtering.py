@@ -2,9 +2,12 @@ import psycopg2
 import psycopg2.extensions
 from dotenv import load_dotenv
 
-
 # load .env file
 load_dotenv()
+
+# user-specific information
+profile_id = input("Enter profile id: ") #5a393d68ed295900010384ca
+cart_products = input("Product ID's: ").split(',') #16121
 
 # connect to database
 connection = psycopg2.connect(user="postgres",
@@ -43,8 +46,10 @@ def content_filtering():
     if recommendDict:
         for category, recommendations in recommendDict.items():
             values = ','.join([f"'{r}'" for r in recommendations]).replace(' ', '"')
-            insertSql = "INSERT INTO content_recommendations (category,product_recommendation) VALUES (%s, %s)"
-            cursor.execute(insertSql, (category, recommendations))
+            insertSql = "INSERT INTO content_recommendations (profile_id, product_id, category, product_recommendation) VALUES (%s, %s, %s, %s)"
+            # recommend products based on user's cart
+            if set(cart_products).intersection(set(recommendations)):
+                cursor.execute(insertSql, (profile_id, product[0], category, recommendations))
 
 
 def run():
