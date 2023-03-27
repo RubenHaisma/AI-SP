@@ -1,82 +1,70 @@
 import psycopg2
-from dotenv import load_dotenv
+import pandas as pd
 
-# load .env file
-load_dotenv()
-
-# Connect to the database
+# connect to database
 connection = psycopg2.connect(user="postgres",
                             password="postgres_password",
                             host="localhost",
                             port="5432",
                             database="huwebshop")
-cursor = connection.cursor()
-print ("Database opened successfully")
+cur = connection.cursor() 
 
-# Create a cursor
-cur = connection.cursor()
+# Set profile_id to generate recommendations for
+profile_id = "5a393d68ed295900010384ca"
 
-# Get the list of all users
-cur.execute("SELECT id FROM profile")
-users = cur.fetchall()
-print(f"Found {len(users)} users")
+# Get the products that have been recently restocked
+cur.execute("SELECT id FROM product WHERE stock_level > 0 AND brand IN (SELECT brand FROM product WHERE id IN (SELECT productid FROM viewed_before WHERE profileid = %s) OR id IN (SELECT productid FROM previously_recommended WHERE profileid = %s)) ORDER BY stock_level DESC LIMIT 10;", (profile_id, profile_id))
+recently_restocked_products = cur.fetchall()
+recently_restocked_products = [product[0] for product in recently_restocked_products]
 
-# Create a dictionary to store the products purchased by each user
-user_products = {}
-for user in users:
-    user_products[user[0]] = set()
-    cur.execute(
-        "SELECT productid FROM \"order\" JOIN \"session\" ON \"order\".sessionid = \"session\".id WHERE profileid=%s",
-        (user[0],)
-    )
-    results = cur.fetchall()
-    for result in results:
-        user_products[user[0]].add(result[0])
-print ("Found products for all users")
+# Get the most frequently purchased products by the profile
+cur.execute("SELECT productid, COUNT(*) AS count FROM \"order\" WHERE sessionid IN (SELECT id FROM \"session\" WHERE profileid = %s) GROUP BY productid ORDER BY count DESC LIMIT 10;", (profile_id,))
+frequent_purchases = cur.fetchall()
+frequent_purchases = [product[0] for product in frequent_purchases]
 
-# Compute the similarity between users based on the Jaccard similarity of their product sets
-def jaccard_similarity(set1, set2):
-    intersection = set1.intersection(set2)
-    union = set1.union(set2)
-    return len(intersection) / len(union)
+# Get the products that have been previously recommended to the profile
+cur.execute("SELECT productid FROM previously_recommended WHERE profileid = %s LIMIT 10;", (profile_id,))
+previously_recommended_products = cur.fetchall()
+previously_recommended_products = [product[0] for product in previously_recommended_products]
 
-# Get the most similar users to a given user
-def get_similar_users(profile_id):
-    similarities = {}
-    for user in users:
-        if user[0] == profile_id:
-            continue
-        similarity = jaccard_similarity(user_products[profile_id], user_products[user[0]])
-        similarities[user[0]] = similarity
-    return sorted(similarities, key=similarities.get, reverse=True)[:10]
+# Get the products that the profile has viewed before
+cur.execute("SELECT productid FROM viewed_before WHERE profileid = %s LIMIT 10;", (profile_id,))
+viewed_products = cur.fetchall()
+viewed_products = [product[0] for product in viewed_products]
 
-# Get the products purchased by the most similar users that the given user has not already purchased
-def get_recommendations(profile_id):
-    similar_users = get_similar_users(profile_id)
-    recommendations = set()
-    for user in similar_users:
-        cur.execute(
-            "SELECT productid FROM \"order\" JOIN \"session\" ON \"order\".sessionid = \"session\".id WHERE profileid=%s AND productid NOT IN %s",
-            (user, tuple(user_products[profile_id]))
-        )
-        results = cur.fetchall()
-        for result in results:
-            recommendations.add(result[0])
-    return list(recommendations)[:4]
+# Combine all the product lists into a set of unique products
+product_set = set(recently_restocked_products + frequent_purchases + previously_recommended_products + viewed_products)
 
-# Store the recommendations in the database
-def store_recommendations(profile_id, recommendations):
-    cur.execute("INSERT INTO recommendations (profileid, productid1, productid2, productid3, productid4) VALUES (%s, %s, %s, %s, %s)",
-                (profile_id, recommendations[0], recommendations[1], recommendations[2], recommendations[3]))
-    connection.commit()
+# Create a dataframe of product attributes for the unique products
+product_df = pd.read_sql_query("SELECT * FROM product WHERE id IN %s;", connection, params=(tuple(product_set),))
 
-# Example usage
-profile_id = input("Enter profile id: ")
-recommendations = get_recommendations(profile_id)
-store_recommendations(profile_id, recommendations)
+# Calculate a score for each product based on the profile's history and behavior
+product_df['score'] = 0
+for i, product in product_df.iterrows():
+    if product['id'] in recently_restocked_products:
+        product_df.at[i, 'score'] += 1
+    if product['id'] in frequent_purchases:
+        product_df.at[i, 'score'] += 2
+    if product['id'] in previously_recommended_products:
+        product_df.at[i, 'score'] += 3
+    if product['id'] in viewed_products:
+        product_df.at[i, 'score'] += 4
 
-# Close the connection
-cur.close()
+# Sort the products by score and get the top 4 recommendations
+recommendations_df = product_df.sort_values('score', ascending=False).head(4)
+recommendations = recommendations_df['id'].tolist()
+
+# Print the recommendations
+print("Top 4 recommended products for profile", profile_id, ":")
+for i, recommendation in enumerate(recommendations):
+    print(str(i+1) + ".", recommendation)
+
+# Insert the recommendations into the database
+for i, recommendation in enumerate(recommendations):
+    cur.execute("INSERT INTO collab_recommendations (profileid, productid, score) VALUES (%s, %s, %s);", (profile_id, recommendation, i+1))
+
+# Commit the changes to the database
+connection.commit()
+
+# Close the database connection
 connection.close()
-
-
