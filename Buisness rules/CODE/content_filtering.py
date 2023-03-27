@@ -3,6 +3,7 @@
 import psycopg2
 import psycopg2.extensions
 from dotenv import load_dotenv
+import os
 
 # load .env file
 load_dotenv()
@@ -13,10 +14,10 @@ cart_products = input("Product ID's: ").split(',') #16121
 
 # connect to database
 connection = psycopg2.connect(user="postgres",
-                            password="postgres_password",
+                            password=os.getenv("postgres_password"),
                             host="localhost",
                             port="5432",
-                            database="huwebshop")
+                            database=os.getenv("postgress_DB"))
 cursor = connection.cursor() 
 
 # This script will create a table with content recommendations for each category

@@ -3,20 +3,21 @@
 import psycopg2
 import pandas as pd
 from dotenv import load_dotenv
+import os
 
 # load .env file
 load_dotenv()
 
 # connect to database
 connection = psycopg2.connect(user="postgres",
-                            password="postgres_password",
+                            password=os.getenv("postgres_password"),
                             host="localhost",
                             port="5432",
-                            database="huwebshop")
+                            database=os.getenv("huwebshop"))
 cur = connection.cursor() 
 
 # Set profile_id to generate recommendations for
-profile_id = "5a393d68ed295900010384ca" #change profile_ID to desired profile
+profile_id = "5a393eceed295900010386a8" #change profile_ID to desired profile
 
 def collab_filtering():
     # Get the products that have been recently restocked

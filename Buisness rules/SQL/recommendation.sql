@@ -1,11 +1,13 @@
 DROP TABLE IF EXISTS content_recommendations CASCADE;
 
 CREATE TABLE content_recommendations (
-    profile_id varchar(255),
-    product_id SERIAL PRIMARY KEY,
-    category text NOT NULL,
-    product_recommendation VARCHAR(255)[]
+    id SERIAL PRIMARY KEY,
+    profile_id TEXT,
+    product_id TEXT,
+    category TEXT,
+    product_recommendation TEXT[]
 );
+
 
 DROP TABLE IF EXISTS collab_recommendations CASCADE;
 
