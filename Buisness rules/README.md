@@ -9,3 +9,5 @@ If you want to run this file, make sure to have installed the full database of t
 To use content_filtering, simply run the content_filtering.py add in a profile_id to keep track of the productst that were recommended. Standard profile is 5a393d68ed295900010384ca. Then enter the product (or products) where you want recommendations on.
 
 To use collab_filtering, simply run the collab_filtering.py and add in a desired profile_id. Standard is profile: 5a393d68ed295900010384ca, one's you've done that continue with the program and let it's do it's magic. After a couple seconds the recommendations are ready in the collab_recommendations table. 
+
+P.S.: Make sure you have a .env file created so that the database connenction can be made successfully.
