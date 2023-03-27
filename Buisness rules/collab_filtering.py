@@ -1,5 +1,11 @@
+# The function collab_filtering was created with the help of AI (ChatGPT 3)
+
 import psycopg2
 import pandas as pd
+from dotenv import load_dotenv
+
+# load .env file
+load_dotenv()
 
 # connect to database
 connection = psycopg2.connect(user="postgres",

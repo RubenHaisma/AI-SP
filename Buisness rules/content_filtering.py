@@ -1,3 +1,5 @@
+# The function content_filtering was created with the help of AI (ChatGPT 3)
+
 import psycopg2
 import psycopg2.extensions
 from dotenv import load_dotenv
