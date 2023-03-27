@@ -9,14 +9,14 @@ CREATE TABLE content_recommendations (
 
 DROP TABLE IF EXISTS collab_recommendations CASCADE;
 
-CREATE TABLE recommendations (
+CREATE TABLE collab_recommendations (
     id SERIAL NOT NULL,
     profileid varchar(255) NOT NULL,
-    productid1 varchar(255) NOT NULL,
-    productid2 varchar(255) NOT NULL,
-    productid3 varchar(255) NOT NULL,
-    productid4 varchar(255) NOT NULL,
-    PRIMARY KEY (id)
+    productid varchar(255) NOT NULL,
+    score float4 NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (profileid) REFERENCES profile (id),
+    FOREIGN KEY (productid) REFERENCES product (id)
 );
 
 
