@@ -1,0 +1,20 @@
+Om de gegeven informatie om te zetten in predikaatlogica voor het rule-based systeem, moeten we eerst de proposities definiëren die bij het algoritme passen:
+
+K(x, y): Klant x heeft product y gekocht
+P(x, y): Product x is van hetzelfde type als product y
+R(x, y): Product x wordt gekocht door klanten die ook product y hebben gekocht
+T(x, y): Product x heeft dezelfde tags als product y
+C(x, y): Klant x heeft product y als favoriet gemarkeerd
+Met deze proposities kunnen we de volgende regels opstellen:
+
+Content Filtering:
+Als klant x product y heeft gekocht en product x van hetzelfde type is als product y of product x dezelfde tags heeft als product y, dan wordt product x aanbevolen aan klant x als R(x, y) geldt:
+
+(K(x, y) ∧ (P(x, y) ∨ T(x, y))) → R(x, y)
+
+Collaborative Filtering:
+Als klant x product y heeft gekocht en een andere klant z ook product y heeft gekocht, en klant z heeft product x gekocht, dan wordt product x aanbevolen aan klant x als klant z product x niet eerder heeft gekocht en niet als favoriet heeft gemarkeerd:
+
+(K(x, y) ∧ K(z, y) ∧ K(z, x) ∧ ¬K(x, x) ∧ ¬C(z, x)) → R(x, y)
+
+Deze regel zorgt ervoor dat als een klant een product heeft gekocht, er wordt gekeken naar andere klanten die hetzelfde product hebben gekocht en of ze nog andere producten hebben gekocht die de huidige klant niet heeft gekocht. Als dat het geval is, wordt dat aanbevolen aan de klant. Het controleert ook of de andere klant het aanbevolen product niet eerder heeft gekocht of als favoriet heeft gemarkeerd.
