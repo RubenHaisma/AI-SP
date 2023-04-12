@@ -1,14 +1,14 @@
 Om de gegeven informatie om te zetten in predikaatlogica voor het rule-based systeem, moeten we eerst de proposities definiëren die bij het algoritme passen:
 
 K(x, y): Klant x heeft product y gekocht
-P(x, y): Product x is van hetzelfde type als product y
+P(x, y): Product x is van dezelfde categorie als product y
 R(x, y): Product x wordt gekocht door klanten die ook product y hebben gekocht
 T(x, y): Product x heeft dezelfde tags als product y
 C(x, y): Klant x heeft product y als favoriet gemarkeerd
 Met deze proposities kunnen we de volgende regels opstellen:
 
 Content Filtering:
-Als klant x product y heeft gekocht en product x van hetzelfde type is als product y of product x dezelfde tags heeft als product y, dan wordt product x aanbevolen aan klant x als R(x, y) geldt:
+Als klant x product y heeft gekocht en product x van dezelfde categorie is als product y of product x dezelfde tags heeft als product y, dan wordt product x aanbevolen aan klant x als R(x, y) geldt:
 
 (K(x, y) ∧ (P(x, y) ∨ T(x, y))) → R(x, y)
 
