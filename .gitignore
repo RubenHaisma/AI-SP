@@ -1,0 +1,7 @@
+__pycache__/
+datasets/
+.env
+.flaskenv
+utilities/imageurls.csv
+/venv/
+/.idea/
